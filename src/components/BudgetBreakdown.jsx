@@ -1,105 +1,72 @@
-import { Pie } from 'react-chartjs-2';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Pie } from 'react-chartjs-2';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-function BudgetBreakdown({ breakdown }) {
-    const chartData = {
-        labels: [
-            'Transportation',
-            'Bills',
-            'Investments',
-            'Needs',
-            'Wants',
-            ...breakdown.customCategories.map((cat) => cat.name),
-            'Savings',
-        ].filter((_, index) => {
-            const values = [
-                breakdown.monthlyTranspo,
-                breakdown.bills,
-                breakdown.investments,
-                breakdown.needs,
-                breakdown.wants,
-                ...breakdown.customCategories.map((cat) => cat.amount),
-                breakdown.savings,
-            ];
-            return values[index] > 0;
-        }),
+function BudgetBreakdown({ userId }) {
+    const [budgets, setBudgets] = useState([]);
+
+    useEffect(() => {
+        const fetchBudgets = async () => {
+            try {
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/budgets/${userId}`);
+                setBudgets(response.data);
+            } catch (error) {
+                console.error('Error fetching budgets:', error);
+            }
+        };
+        fetchBudgets();
+    }, [userId]);
+
+    const deleteBudget = async (id) => {
+        try {
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/budgets/${id}`);
+            setBudgets(budgets.filter((budget) => budget.id !== id));
+        } catch (error) {
+            console.error('Error deleting budget:', error);
+        }
+    };
+
+    const chartData = (budget) => ({
+        labels: ['Investments', 'Needs', 'Wants', ...Object.keys(budget.custom_categories)],
         datasets: [
             {
                 data: [
-                    breakdown.monthlyTranspo,
-                    breakdown.bills,
-                    breakdown.investments,
-                    breakdown.needs,
-                    breakdown.wants,
-                    ...breakdown.customCategories.map((cat) => cat.amount),
-                    breakdown.savings,
-                ].filter((value) => value > 0),
-                backgroundColor: [
-                    '#FF6384',
-                    '#36A2EB',
-                    '#FFCE56',
-                    '#4BC0C0',
-                    '#9966FF',
-                    '#FF9F40',
-                    '#C9CBCF',
-                    ...Array(breakdown.customCategories.length)
-                        .fill()
-                        .map((_, i) => `hsl(${(i * 50) % 360}, 70%, 50%)`),
+                    budget.investments_percent * (budget.salary - budget.transpo - budget.bills) / 100,
+                    budget.needs_percent * (budget.salary - budget.transpo - budget.bills) / 100,
+                    budget.wants_percent * (budget.salary - budget.transpo - budget.bills) / 100,
+                    ...Object.values(budget.custom_categories),
                 ],
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
             },
         ],
-    };
-
-    const chartOptions = {
-        responsive: true,
-        plugins: {
-            legend: { position: 'top' },
-            tooltip: {
-                callbacks: {
-                    label: (context) =>
-                        `₱${context.raw.toFixed(2)} (${((context.raw / breakdown.salary) * 100).toFixed(1)}%)`,
-                },
-            },
-        },
-    };
+    });
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold mb-4">Budget Breakdown</h2>
-            <div className="space-y-2">
-                <p>
-                    <span className="font-semibold">Monthly Salary:</span> ₱{breakdown.salary.toFixed(2)}
-                </p>
-                <p>
-                    <span className="font-semibold">Transportation:</span> ₱{breakdown.monthlyTranspo.toFixed(2)}
-                </p>
-                <p>
-                    <span className="font-semibold">Bills:</span> ₱{breakdown.bills.toFixed(2)}
-                </p>
-                <p>
-                    <span className="font-semibold">Investments:</span> ₱{breakdown.investments.toFixed(2)}
-                </p>
-                <p>
-                    <span className="font-semibold">Needs:</span> ₱{breakdown.needs.toFixed(2)}
-                </p>
-                <p>
-                    <span className="font-semibold">Wants:</span> ₱{breakdown.wants.toFixed(2)}
-                </p>
-                {breakdown.customCategories.length > 0 && (
-                    <>
-                        <p className="font-semibold mt-2">Custom Categories:</p>
-                        {breakdown.customCategories.map((cat, index) => (
-                            <p key={index}>{cat.name}: ₱{cat.amount.toFixed(2)}</p>
-                        ))}
-                    </>
-                )}
-                <p className="font-semibold mt-4">Savings: ₱{breakdown.savings.toFixed(2)}</p>
-            </div>
-            <div className="mt-6">
-                <Pie data={chartData} options={chartOptions} />
-            </div>
+        <div>
+            <h2 className="text-xl font-semibold mb-4">Your Budgets</h2>
+            {budgets.map((budget) => (
+                <div key={budget.id} className="mb-4 p-4 border rounded">
+                    <p>Salary: ${budget.salary}</p>
+                    <p>Transportation: ${budget.transpo}</p>
+                    <p>Bills: ${budget.bills}</p>
+                    <p>Investments: {budget.investments_percent}%</p>
+                    <p>Needs: {budget.needs_percent}%</p>
+                    <p>Wants: {budget.wants_percent}%</p>
+                    <p>Custom Categories: {JSON.stringify(budget.custom_categories)}</p>
+                    <div className="w-64 h-64">
+                        <Pie data={chartData(budget)} />
+                    </div>
+                    <button
+                        onClick={() => deleteBudget(budget.id)}
+                        className="mt-2 p-2 bg-red-500 text-white rounded"
+                    >
+                        Delete
+                    </button>
+                </div>
+            ))}
         </div>
     );
 }
