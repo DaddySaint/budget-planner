@@ -80,11 +80,12 @@ function BudgetForm({ userId }) {
     doc.text('Budget Breakdown', 10, 10);
     if (breakdown) {
       doc.text(`Investments: $${breakdown.investments.toFixed(2)}`, 10, 20);
-      doc.text(`Needs: $${breakdown.needs.toFixed(2)}`, 10, 30);
-      doc.text(`Wants: $${breakdown.wants.toFixed(2)}`, 10, 40);
+      doc.text(`Needs: ₱${breakdown.needs.toFixed(2)}`, 10, 30);
+      doc.text(`Wants: ₱${breakdown.wants.toFixed(2)}`, 10, 40);
+      doc.text(`Wants: ₱${breakdown.wants.toFixed(2)}`, 10, 40);
       let y = 50;
       for (const [name, amount] of Object.entries(breakdown.customCategories)) {
-        doc.text(`${name}: $${amount.toFixed(2)}`, 10, y);
+        doc.text(`₱${name}: ₱${amount.toFixed(2)}`, 10, y);
         y += 10;
       }
     }
@@ -174,12 +175,12 @@ function BudgetForm({ userId }) {
 
       {breakdown && (
         <div className="mt-6 bg-gray-50 p-4 rounded shadow-inner">
-          <h4 className="text-lg font-semibold mb-2 text-gray-800">📉 Breakdown</h4>
-          <ul className="text-sm space-y-1">
-            <li>Investments: ${breakdown.investments.toFixed(2)}</li>
-            <li>Needs: ${breakdown.needs.toFixed(2)}</li>
-            <li>Wants: ${breakdown.wants.toFixed(2)}</li>
-            <li>Custom Total: ${breakdown.customTotal.toFixed(2)}</li>
+          <h4 className="text-lg font-semibold mb-2 text-black">📉 Breakdown</h4>
+          <ul className="text-sm space-y-1 text-black">
+            <li>Investments: ₱{breakdown.investments.toFixed(2)}</li>
+            <li>Needs: ₱{breakdown.needs.toFixed(2)}</li>
+            <li>Wants: ₱{breakdown.wants.toFixed(2)}</li>
+            <li>Custom Total: ₱{breakdown.customTotal.toFixed(2)}</li>
           </ul>
         </div>
       )}

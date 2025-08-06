@@ -49,9 +49,9 @@ function BudgetBreakdown({ userId }) {
             <h2 className="text-xl font-semibold mb-4">Your Budgets</h2>
             {budgets.map((budget) => (
                 <div key={budget.id} className="mb-4 p-4 border rounded">
-                    <p>Salary: ${budget.salary}</p>
-                    <p>Transportation: ${budget.transpo}</p>
-                    <p>Bills: ${budget.bills}</p>
+                    <p>Salary: ₱{budget.salary}</p>
+                    <p>Transportation: ₱{budget.transpo}</p>
+                    <p>Bills: ₱{budget.bills}</p>
                     <p>Investments: {budget.investments_percent}%</p>
                     <p>Needs: {budget.needs_percent}%</p>
                     <p>Wants: {budget.wants_percent}%</p>
@@ -61,7 +61,7 @@ function BudgetBreakdown({ userId }) {
                     </div>
                     <button
                         onClick={() => deleteBudget(budget.id)}
-                        className="mt-2 p-2 bg-red-500 text-white rounded"
+                        className="mt-2 p-2 bg-red-500 text-black rounded"
                     >
                         Delete
                     </button>
